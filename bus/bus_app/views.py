@@ -6,36 +6,74 @@ from rest_framework.views import APIView
 from rest_framework.generics import *
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
-from .serializers import UserRegisterSerializer,BusSerializer
+from .serializers import UserRegisterSerializer, BusSerializer
 from .models import *
+
+
 # Create your views here.
 
 class UserRegisterView(APIView):
     def post(self):
-        serializer=UserRegisterSerializer(data=request.data)
+        serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({'token':token.key},status=status.HTTP_201_CREATED)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            return Response({'token': token.key}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserLoginView(APIView):
     def post(self):
-        username=request.data.get('username')
-        password=request.data.get('password')
-        user=authenticate(username=username,password=password)
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(username=username, password=password)
         if user:
-            token,created=Token.objects.create(user=user)
+            token, created = Token.objects.create(user=user)
             return Response(
-                {'token':token.key,
-                 'user_id':user.id},
+                {'token': token.key,
+                 'user_id': user.id},
                 status=status.HTTP_200_OK
             )
-        return Response({'error':'Invalid Credentials'},status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 class BusCreateView(ListAPIView):
     queryset = Bus.objects.all()
     serializer_class = BusSerializer
 
+
 class BusDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Bus.objects.all()
     serializer_class = BusSerializer
+
+
+class BookingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self):
+        seat_id = request.data.get('seat')
+        try:
+            seat = Seat.objects.get(id=seat_id)
+            if seat.is_booked:
+                return Response({"error": "seat is already booked"}, status=status.HTTP_400_BAD_REQUEST)
+            seat.is_booked = True
+            seat.save()
+            bookings = Booking.objects.create(
+                user=request.user,
+                bus=Seat.bus,
+                seat=seat
+            )
+            serializer = BusSerializer(bookings)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except seat.DoesNotExist:
+            return Response({'error': "Invalid Seat id"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserBookingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        if request.user.id != user_id:
+            return Response({'error': 'unauthorised'}, status=status.HTTP_401_UNAUTHORIZED)
+        bookings = Booking.objects.filter(id=user_id)
+        serializer = BusSerializer(bookings, many=True)
+        return Response(serializer.data)
