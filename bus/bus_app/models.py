@@ -8,6 +8,7 @@ class Bus(models.Model):
     number = models.CharField(max_length=100, unique=True)
     origin = models.CharField(max_length=100)
     destination = models.CharField(max_length=100)
+    no_of_seats=models.PositiveIntegerField()
     start_time = models.TimeField()
     end_time = models.TimeField()
     price = models.DecimalField(max_digits=8, decimal_places=2)

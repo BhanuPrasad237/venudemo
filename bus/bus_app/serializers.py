@@ -11,4 +11,4 @@ class BusSerializer(serializers.ModelSerializer):
 class SeatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seat
-        fields = "__all__"
+        fields = ["id","seat_number","is_booked"]
