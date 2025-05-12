@@ -13,10 +13,11 @@ from .models import *
 # Create your views here.
 
 class UserRegisterView(APIView):
-    def post(self):
+    def post(self,request):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            token=Token.objects.get_or_create(user=user)
             return Response({'token': token.key}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -27,7 +28,7 @@ class UserLoginView(APIView):
         password = request.data.get('password')
         user = authenticate(username=username, password=password)
         if user:
-            token, created = Token.objects.create(user=user)
+            token, created = Token.objects.get_or_create(user=user)
             return Response(
                 {'token': token.key,
                  'user_id': user.id},
@@ -59,7 +60,7 @@ class BookingView(APIView):
             seat.save()
             bookings = Booking.objects.create(
                 user=request.user,
-                bus=Seat.bus,
+                bus=seat.bus,
                 seat=seat
             )
             serializer = BusSerializer(bookings)
