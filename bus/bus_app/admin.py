@@ -1,6 +1,17 @@
 from django.contrib import admin
-from .models import Bus,Seat
+from .models import Bus, Seat
+
+
 # Register your models here.
 
-admin.site.register(Bus)
-admin.site.register(Seat)
+
+class BusAdmin(admin.ModelAdmin):
+    list_display = ("bus_name", "number", "origin", "destination", "start_time", "end_time", "price")
+
+
+class SeatAdmin(admin.ModelAdmin):
+    list_display = ("bus", "seat_number", "is_booked")
+
+
+admin.site.register(Bus, BusAdmin)
+admin.site.register(Seat, SeatAdmin)
