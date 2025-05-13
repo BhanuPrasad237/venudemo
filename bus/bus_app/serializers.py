@@ -33,7 +33,7 @@ class SeatSerializer(serializers.ModelSerializer):
 
 class BookingSerializer(serializers.ModelSerializer):
     bus = serializers.StringRelatedField()
-    seat = SeatSerializer
+    seat = SeatSerializer(read_only=True)
     user = serializers.StringRelatedField()
 
     class Meta:

@@ -13,17 +13,17 @@ from .models import *
 # Create your views here.
 
 class UserRegisterView(APIView):
-    def post(self,request):
+    def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            token=Token.objects.get_or_create(user=user)
+            user = serializer.save()
+            token,created = Token.objects.get_or_create(user=user)
             return Response({'token': token.key}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserLoginView(APIView):
-    def post(self):
+    def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
         user = authenticate(username=username, password=password)
@@ -50,7 +50,7 @@ class BusDetailView(RetrieveUpdateDestroyAPIView):
 class BookingView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self):
+    def post(self,request):
         seat_id = request.data.get('seat')
         try:
             seat = Seat.objects.get(id=seat_id)
@@ -65,7 +65,7 @@ class BookingView(APIView):
             )
             serializer = BusSerializer(bookings)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        except seat.DoesNotExist:
+        except Seat.DoesNotExist:
             return Response({'error': "Invalid Seat id"}, status=status.HTTP_400_BAD_REQUEST)
 
 
