@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.generics import *
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
-from .serializers import UserRegisterSerializer, BusSerializer
+from .serializers import UserRegisterSerializer, BusSerializer, BookingSerializer
 from .models import *
 
 
@@ -63,7 +63,7 @@ class BookingView(APIView):
                 bus=seat.bus,
                 seat=seat
             )
-            serializer = BusSerializer(bookings)
+            serializer = BookingSerializer(bookings)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Seat.DoesNotExist:
             return Response({'error': "Invalid Seat id"}, status=status.HTTP_400_BAD_REQUEST)
@@ -76,5 +76,5 @@ class UserBookingView(APIView):
         if request.user.id != user_id:
             return Response({'error': 'unauthorised'}, status=status.HTTP_401_UNAUTHORIZED)
         bookings = Booking.objects.filter(id=user_id)
-        serializer = BusSerializer(bookings, many=True)
+        serializer = BookingSerializer(bookings, many=True)
         return Response(serializer.data)
