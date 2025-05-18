@@ -78,3 +78,6 @@ class UserBookingView(APIView):
         bookings = Booking.objects.filter(id=user_id)
         serializer = BookingSerializer(bookings, many=True)
         return Response(serializer.data)
+
+
+#made change in bhanu
