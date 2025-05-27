@@ -33,5 +33,3 @@ class Booking(models.Model):
     seat = models.ForeignKey(Seat, on_delete=models.CASCADE)
     booking_time = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"{self.user.username}-{self.bus.bus_name}-{self.seat.seat_number}"
